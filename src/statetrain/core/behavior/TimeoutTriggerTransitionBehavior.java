@@ -12,7 +12,7 @@ import statetrain.utils.timing.schedule.TimerScheduler;
 import java.time.Duration;
 import java.util.Optional;
 
-public class TimeoutTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
+public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
     private final Duration timeout;
     private final TTrigger timeoutTrigger;
     private final TimerScheduler timerScheduler;
@@ -21,7 +21,7 @@ public class TimeoutTransitionBehavior<TTrigger, TState> extends BaseBehavior<TT
 
     private final Object lock = new Object();
 
-    public TimeoutTransitionBehavior(TState attachedState, Duration timeout, TTrigger timeoutTrigger, TimerScheduler timerScheduler) {
+    public TimeoutTriggerTransitionBehavior(TState attachedState, Duration timeout, TTrigger timeoutTrigger, TimerScheduler timerScheduler) {
         super(attachedState);
         this.timeout = timeout;
         this.timeoutTrigger = timeoutTrigger;

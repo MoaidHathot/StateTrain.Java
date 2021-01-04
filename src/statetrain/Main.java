@@ -1,5 +1,6 @@
 package statetrain;
 
+import statetrain.core.State;
 import statetrain.core.event.IStateEventNotifier;
 import statetrain.core.event.args.*;
 import statetrain.exceptions.StateMachineException;
@@ -10,6 +11,7 @@ import statetrain.core.behavior.*;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Optional;
 
 public class Main {
 
@@ -46,7 +48,7 @@ public class Main {
                 .addTransition("Call-declined-timeout", "InCallEnded")
                 .addTransition("Call-ended", "Idle")
                 .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
-                .addBehavior(state -> new TimeoutTransitionBehavior<>(state.getState(), Duration.ofSeconds(3), "Call-declined-timeout", scheduler))
+                .addBehavior(state -> new TimeoutTriggerTransitionBehavior<>(state.getState(), Duration.ofSeconds(3), "Call-declined-timeout", scheduler))
                 .addBehavior(state -> new UnregisteredTriggerTransitionBehavior<>(state.getState(), "InUnfamiliarState"));
 
         builder.configureState("InCall")
@@ -57,13 +59,13 @@ public class Main {
         builder.configureState("InCallEnded")
                 .addTransition("Call-summary-ended", "Idle")
                 .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
-                .addBehavior(state -> new ImmediateTriggerStateBehavior<>(state.getState(), "Call-summary-ended"));
+                .addBehavior(state -> new ImmediateTriggerTransitionStateBehavior<>(state.getState(), "Call-summary-ended"));
 
         builder.configureState("InUnfamiliarState")
                 .addTransition("ContinueToIdle", "Idle")
-                .addBehavior(state -> new ImmediateStateTransitionBehavior<>(state.getState(), "TriggerRandom", "Idle"));
-//                .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
-//                .addBehavior(state -> new ImmediateTriggerStateBehavior<>(state.getState(), "ContinueToIdle"));
+//                .addBehavior(state -> new ImmediateStateTransitionBehavior<>(state.getState(), "TriggerRandom", "Idle"));
+                .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
+                .addBehavior(state -> new ImmediateTriggerTransitionStateBehavior<>(state.getState(), "ContinueToIdle"));
 
         return builder
                 .setDefaultStateBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
@@ -75,7 +77,8 @@ public class Main {
 
         @Override
         public void onInitialTransition(InitialTransitionArgs<TTrigger, TState> args) {
-            System.out.println(args);
+            System.out.printf("Initial transition to '%s'\r\n", args.getInitialState().getState());
+//            System.out.println(args);
         }
 
         @Override
@@ -85,12 +88,14 @@ public class Main {
 
         @Override
         public void onTriggerReceived(TriggerReceivedArgs<TTrigger, TState> args) {
-            System.out.println("\t\t" + args);
+            System.out.printf("\t\t\tTriggered '%s' on state '%s'\r\n", args.getTrigger(), args.getCurrentState().getState());
+//            System.out.println("\t\t" + args);
         }
 
         @Override
         public void onStateTransitioned(StateTransitionedArgs<TTrigger, TState> args) {
-            System.out.println(args);
+            System.out.printf("Transitioned to '%s' from '%s' due to '%s' and '%s'\r\n", args.getNewState().getState(), Optional.ofNullable(args.getOldState()).map(State::getState).orElse(null), args.getTrigger(), args.getTransitionCauser().getName());
+//            System.out.println(args);
         }
 
         @Override

@@ -7,10 +7,10 @@ import statetrain.core.behavior.args.BehaviorActivatingArgs;
 import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
 import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 
-public class ImmediateTriggerStateBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
+public class ImmediateTriggerTransitionStateBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
     private final TTrigger immediateTrigger;
 
-    public ImmediateTriggerStateBehavior(TState attachedState, TTrigger immediateTrigger) {
+    public ImmediateTriggerTransitionStateBehavior(TState attachedState, TTrigger immediateTrigger) {
         super(attachedState);
         this.immediateTrigger = immediateTrigger;
     }
