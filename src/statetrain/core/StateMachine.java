@@ -7,6 +7,7 @@ import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
 import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 import statetrain.core.event.IStateEventNotifier;
 import statetrain.core.event.NullStateEventNotifier;
+import statetrain.core.event.SafeStateEventNotifier;
 import statetrain.core.event.args.*;
 import statetrain.core.exceptions.StateMachineStateException;
 import statetrain.core.exceptions.StateMachineStateExceptionReason;
@@ -38,7 +39,7 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
             throw new StateMachineStateException(StateMachineStateExceptionReason.EmptyStateMap, "State map can't be empty");
         }
 
-        this.stateEventNotifier = Optional.ofNullable(stateEventNotifier).orElseGet(NullStateEventNotifier::new);
+        this.stateEventNotifier = Optional.ofNullable(stateEventNotifier).map(n -> (IStateEventNotifier<TTrigger, TState>)new SafeStateEventNotifier<>(n)).orElseGet(NullStateEventNotifier::new);
 
         this.states = states;
         this.initialState = initialState;
