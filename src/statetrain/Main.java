@@ -112,5 +112,10 @@ public class Main {
         public void onException(ExceptionArgs<TTrigger, TState> args) {
             System.out.println("!!**!! " + args);
         }
+
+        @Override
+        public void onStoppedTransition(StoppedTransitionArgs<TTrigger, TState> args) {
+//            System.out.println("\t\t" + args);
+        }
     }
 }

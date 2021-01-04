@@ -56,4 +56,9 @@ public class CompositeStateEventNotifier<TTrigger, TState> implements IStateEven
     public void onException(ExceptionArgs args) {
         notifierList.forEach(n -> n.onException(args));
     }
+
+    @Override
+    public void onStoppedTransition(StoppedTransitionArgs<TTrigger, TState> args) {
+        notifierList.forEach(n -> n.onStoppedTransition(args));
+    }
 }

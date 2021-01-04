@@ -1,6 +1,10 @@
 package statetrain.core;
 
 import statetrain.core.behavior.IBehavior;
+import statetrain.core.behavior.args.BehaviorActivatedArgs;
+import statetrain.core.behavior.args.BehaviorActivatingArgs;
+import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
+import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 import statetrain.core.event.IStateEventNotifier;
 import statetrain.core.event.NullStateEventNotifier;
 import statetrain.core.event.args.*;
@@ -20,12 +24,6 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
     private final State<TTrigger, TState>  initialState;
     private final State<TTrigger, TState> onErrorState;
 
-    //Todo - add guards for onErrorState in case it is not in the state-map.
-    //Also- think again what to do in case onErrorState is not provided. Throw on constructor? Use current? throw on error?
-    //Also- make sure everything is guarded on the transition, performStateTransitioning and unfamiliarTransitioned events. Think what do with the 'onError' of each state.
-    //Also - think if we need the state metadata.
-    //todo - multi-threading safety
-    //todo - finish implementing timer
     public StateMachine(Map<TState, State<TTrigger, TState>> states, State<TTrigger, TState> initialState, State<TTrigger, TState> onErrorState, IStateEventNotifier<TTrigger, TState> stateEventNotifier) throws StateMachineStateException {
 
         if(null == initialState){
@@ -56,83 +54,94 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
     private void transitionToInitialState(){
         final var context = new StateMachineContext<>(this);
         stateEventNotifier.onInitialTransition(new InitialTransitionArgs<>(initialState, context));
-        performTransition(null, initialState, context, null, null);
+        performTransition(null, initialState, context, null, null, new TransitionArgs<>(new HashMap<>()));
         context.commit();
     }
 
     private void transitionToErrorState(Throwable error){
         final var context = new StateMachineContext<>(this);
         stateEventNotifier.onErrorTransition(new ErrorTransitionArgs<>(currentState, onErrorState, context, error));
-        performTransition(currentState, onErrorState, new StateMachineContext<>(this), null, null);
+        performTransition(currentState, onErrorState, new StateMachineContext<>(this), null, null, new TransitionArgs<>(new HashMap<>()));
         context.commit();
     }
 
-    public synchronized State<TTrigger, TState> triggerTransition(TTrigger trigger){
+    public State<TTrigger, TState> triggerTransition(TTrigger trigger){
+        return triggerTransition(trigger, null);
+    }
+
+    public synchronized State<TTrigger, TState> triggerTransition(TTrigger trigger, TransitionArgs args){
+
+        args = Optional.ofNullable(args).orElse(new TransitionArgs(new HashMap<>()));
+
         final var context = new StateMachineContext<>(this);
-        stateEventNotifier.onTriggerReceived(new TriggerReceivedArgs<>(trigger, currentState, context));
-        final var result = handleTransitionTrigger(trigger, context);
+        stateEventNotifier.onTriggerReceived(new TriggerReceivedArgs<>(trigger, currentState, args, context));
+        final var result = handleTransitionTrigger(trigger, context, args);
         context.commit();
 
         return result;
     }
 
-    private synchronized State<TTrigger, TState> handleTransitionTrigger(TTrigger trigger, StateMachineContext<TTrigger, TState> context){
+    private synchronized State<TTrigger, TState> handleTransitionTrigger(TTrigger trigger, StateMachineContext<TTrigger, TState> context, TransitionArgs<TTrigger, TState> args){
         final var behaviors = currentState.getBehaviors();
-
+//todo - create objects args instead of arguments to behavior methods for future compatibility
         State<TTrigger, TState> transitionToState = null;
         IBehavior<TTrigger, TState> transitionDueToBehavior = null;
 
         for(final var behavior : behaviors){
-            final var result = behavior.triggerTransition(context, currentState, trigger);
+            final var result = behavior.triggerTransition(new BehaviorTriggerTransitionArgs<>(trigger, args, currentState, context));
 
             final var resultState = result.getResult();
 
             if(null != resultState){
                 transitionDueToBehavior = behavior;
                 transitionToState = getSafely(() -> selectStateToTransition(currentState, trigger, resultState), this::transitionToErrorState);
+            }
+
+            if(result.stopTransition()){
+                stateEventNotifier.onStoppedTransition(new StoppedTransitionArgs<>(context, result, transitionDueToBehavior, null != transitionToState));
                 break;
             }
         }
 
         if(null != transitionToState){
-            performTransition(currentState, transitionToState, context, trigger, transitionDueToBehavior);
+            performTransition(currentState, transitionToState, context, trigger, transitionDueToBehavior, args);
         }
 
         return currentState;
     }
 
-    private void performTransition(State<TTrigger, TState> oldState, State<TTrigger, TState> newState, StateMachineContext<TTrigger, TState> context, TTrigger trigger, IBehavior<TTrigger, TState> transitionCauser){
+    private void performTransition(State<TTrigger, TState> oldState, State<TTrigger, TState> newState, StateMachineContext<TTrigger, TState> context, TTrigger trigger, IBehavior<TTrigger, TState> transitionCauser, TransitionArgs<TTrigger, TState> args){
 
         if(null != oldState){
             for(final var behavior : oldState.getBehaviors()){
-                callBehaviorDeactivated(behavior, context, oldState, newState, trigger);
+                callBehaviorDeactivated(behavior, context, oldState, newState, trigger, args);
             }
         }
 
         for(final var behavior : newState.getBehaviors()){
-            callBehaviorActivating(behavior, context, newState, trigger);
+            callBehaviorActivating(behavior, context, newState, trigger, args);
         }
 
         currentState = newState;
         stateEventNotifier.onStateTransitioned(new StateTransitionedArgs<>(oldState, newState, context, trigger, transitionCauser));
 
         for(final var behavior : newState.getBehaviors()){
-            callBehaviorActivated(behavior, context, newState, trigger);
+            callBehaviorActivated(behavior, context, newState, trigger, args);
         }
     }
 
-    private void callBehaviorActivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger){
-        runSafely(() ->  behavior.activated(context, newState, trigger), this::notifyError);
+    private void callBehaviorActivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
+        runSafely(() ->  behavior.activated(new BehaviorActivatedArgs<>(trigger, args, newState, context)), this::notifyError);
         stateEventNotifier.onActivatedBehavior(new ActivatedBehaviorArgs<>(behavior, context, newState, trigger));
     }
 
-    private void callBehaviorActivating(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger){
-        runSafely(() ->  behavior.activating(context, newState, trigger), this::notifyError);
+    private void callBehaviorActivating(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
+        runSafely(() ->  behavior.activating(new BehaviorActivatingArgs<>(trigger, args, newState, context)), this::notifyError);
         stateEventNotifier.onActivatingBehavior(new ActivatingBehaviorArgs<>(behavior, context, newState, trigger));
     }
 
-    private void callBehaviorDeactivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> oldState, State<TTrigger, TState> newState, TTrigger trigger){
-        runSafely(() ->  behavior.deactivated(context, oldState, trigger, newState), this::notifyError);
+    private void callBehaviorDeactivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> oldState, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
+        runSafely(() ->  behavior.deactivated(new BehaviorDeactivatedArgs<>(trigger, args, oldState, newState, context)), this::notifyError);
         stateEventNotifier.onDeactivatedBehavior(new DeactivatedBehaviorArgs<>(behavior, context, oldState, newState, trigger));
     }
 

@@ -2,6 +2,10 @@ package statetrain.core.behavior;
 
 import statetrain.core.StateMachineContext;
 import statetrain.core.State;
+import statetrain.core.behavior.args.BehaviorActivatedArgs;
+import statetrain.core.behavior.args.BehaviorActivatingArgs;
+import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
+import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 
 public class UnregisteredTriggerTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
 
@@ -17,21 +21,21 @@ public class UnregisteredTriggerTransitionBehavior<TTrigger, TState> extends Bas
     }
 
     @Override
-    public void activating(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public void activating(BehaviorActivatingArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public void activated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public void activated(BehaviorActivatedArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public void deactivated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger tTrigger, State<TTrigger, TState> newState) {
+    public void deactivated(BehaviorDeactivatedArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public TransitionResult<TState> triggerTransition(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public TransitionResult<TState> triggerTransition(BehaviorTriggerTransitionArgs<TTrigger, TState> args) {
 
-        if(!context.getCurrentState().getStateMap().containsKey(trigger)){
+        if(!args.getContext().getCurrentState().getStateMap().containsKey(args.getTrigger())){
             return TransitionResult.stateTransitionResult(defaultState);
         }
 

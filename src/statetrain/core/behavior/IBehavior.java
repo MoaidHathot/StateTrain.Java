@@ -2,13 +2,17 @@ package statetrain.core.behavior;
 
 import statetrain.core.StateMachineContext;
 import statetrain.core.State;
+import statetrain.core.behavior.args.BehaviorActivatedArgs;
+import statetrain.core.behavior.args.BehaviorActivatingArgs;
+import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
+import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 
 public interface IBehavior<TTrigger, TState> extends AutoCloseable {
 
     String getName();
 
-    void activating(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger);
-    void activated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger);
-    void deactivated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger, State<TTrigger, TState> newState);
-    TransitionResult<TState> triggerTransition(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger);
+    void activating(BehaviorActivatingArgs<TTrigger, TState> args);
+    void activated(BehaviorActivatedArgs<TTrigger, TState> args);
+    void deactivated(BehaviorDeactivatedArgs<TTrigger, TState> args);
+    TransitionResult<TState> triggerTransition(BehaviorTriggerTransitionArgs<TTrigger, TState> args);
 }

@@ -34,4 +34,8 @@ public class NullStateEventNotifier<TTrigger, TState> implements IStateEventNoti
     @Override
     public void onException(ExceptionArgs<TTrigger, TState> args) {
     }
+
+    @Override
+    public void onStoppedTransition(StoppedTransitionArgs<TTrigger, TState> args) {
+    }
 }

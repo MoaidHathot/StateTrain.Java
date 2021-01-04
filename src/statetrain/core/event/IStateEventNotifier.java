@@ -12,4 +12,5 @@ public interface IStateEventNotifier<TTrigger, TState> {
     void onActivatedBehavior(ActivatedBehaviorArgs<TTrigger, TState> args);
     void onDeactivatedBehavior(DeactivatedBehaviorArgs<TTrigger, TState> args);
     void onException(ExceptionArgs<TTrigger, TState> args);
+    void onStoppedTransition(StoppedTransitionArgs<TTrigger, TState> args);
 }

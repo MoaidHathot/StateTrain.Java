@@ -2,6 +2,10 @@ package statetrain.core.behavior;
 
 import statetrain.core.StateMachineContext;
 import statetrain.core.State;
+import statetrain.core.behavior.args.BehaviorActivatedArgs;
+import statetrain.core.behavior.args.BehaviorActivatingArgs;
+import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
+import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 
 import java.util.Optional;
 
@@ -12,22 +16,22 @@ public class RegisteredTriggerTransitionBehavior<TTrigger, TState> extends BaseB
     }
 
     @Override
-    public void activating(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public void activating(BehaviorActivatingArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public void activated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public void activated(BehaviorActivatedArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public void deactivated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger tTrigger, State<TTrigger, TState> newState) {
+    public void deactivated(BehaviorDeactivatedArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public TransitionResult<TState> triggerTransition(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public TransitionResult<TState> triggerTransition(BehaviorTriggerTransitionArgs<TTrigger, TState> args) {
         return Optional
-            .of(trigger)
-            .map(t -> context.getCurrentState().getStateMap().getOrDefault(t, null))
+            .of(args.getTrigger())
+            .map(t -> args.getContext().getCurrentState().getStateMap().getOrDefault(t, null))
             .map(TransitionResult::stateTransitionResult)
             .orElse(TransitionResult.noActionResult());
     }

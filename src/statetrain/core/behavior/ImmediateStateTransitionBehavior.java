@@ -2,6 +2,10 @@ package statetrain.core.behavior;
 
 import statetrain.core.StateMachineContext;
 import statetrain.core.State;
+import statetrain.core.behavior.args.BehaviorActivatedArgs;
+import statetrain.core.behavior.args.BehaviorActivatingArgs;
+import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
+import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
 
 public class ImmediateStateTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
 
@@ -15,21 +19,21 @@ public class ImmediateStateTransitionBehavior<TTrigger, TState> extends BaseBeha
     }
 
     @Override
-    public void activating(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
+    public void activating(BehaviorActivatingArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public void activated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
-        context.registerResolveAction(c -> c.triggerTransition(immediateTrigger));
+    public void activated(BehaviorActivatedArgs<TTrigger, TState> args) {
+        args.getContext().registerResolveAction(c -> c.triggerTransition(immediateTrigger));
     }
 
     @Override
-    public void deactivated(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger, State<TTrigger, TState> newState) {
+    public void deactivated(BehaviorDeactivatedArgs<TTrigger, TState> args) {
     }
 
     @Override
-    public TransitionResult<TState> triggerTransition(StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> attachedState, TTrigger trigger) {
-        return trigger == immediateTrigger ? TransitionResult.stateTransitionResult(immediateState) : TransitionResult.noActionResult();
+    public TransitionResult<TState> triggerTransition(BehaviorTriggerTransitionArgs<TTrigger, TState> args) {
+        return args.getTrigger() == immediateTrigger ? TransitionResult.stateTransitionResult(immediateState) : TransitionResult.noActionResult();
     }
 
     @Override
