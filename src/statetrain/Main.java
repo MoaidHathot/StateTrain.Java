@@ -1,6 +1,7 @@
 package statetrain;
 
 import statetrain.core.State;
+import statetrain.core.TransitionArgs;
 import statetrain.core.event.IStateEventNotifier;
 import statetrain.core.event.args.*;
 import statetrain.exceptions.StateMachineException;

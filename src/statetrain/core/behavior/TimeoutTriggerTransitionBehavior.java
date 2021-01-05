@@ -6,6 +6,7 @@ import statetrain.core.behavior.args.BehaviorActivatedArgs;
 import statetrain.core.behavior.args.BehaviorActivatingArgs;
 import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
 import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
+import statetrain.utils.timing.schedule.ITaskScheduler;
 import statetrain.utils.timing.schedule.TaskContext;
 import statetrain.utils.timing.schedule.TimerScheduler;
 
@@ -15,13 +16,13 @@ import java.util.Optional;
 public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
     private final Duration timeout;
     private final TTrigger timeoutTrigger;
-    private final TimerScheduler timerScheduler;
+    private final ITaskScheduler timerScheduler;
 
     private TaskContext currentTimeoutContext;
 
     private final Object lock = new Object();
 
-    public TimeoutTriggerTransitionBehavior(TState attachedState, Duration timeout, TTrigger timeoutTrigger, TimerScheduler timerScheduler) {
+    public TimeoutTriggerTransitionBehavior(TState attachedState, Duration timeout, TTrigger timeoutTrigger, ITaskScheduler timerScheduler) {
         super(attachedState);
         this.timeout = timeout;
         this.timeoutTrigger = timeoutTrigger;
