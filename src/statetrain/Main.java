@@ -46,10 +46,10 @@ public class Main {
                 .addTransition("Call-accepted", "InCall")
 //              .addTransition("Call-declined", "Idle")
                 .addTransition("Call-declined", "InCallEnded")
-                .addTransition("Call-declined-timeout", "InCallEnded")
+//                .addTransition("Call-declined-timeout", "InCallEnded")
                 .addTransition("Call-ended", "Idle")
                 .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
-                .addBehavior(state -> new TimeoutTriggerTransitionBehavior<>(state.getState(), Duration.ofSeconds(3), "Call-declined-timeout", scheduler))
+                .addBehavior(state -> new TimeoutTriggerTransitionBehavior<>(state.getState(), Duration.ofSeconds(3), "Call-declined-timeout", "InCallEnded", scheduler))
                 .addBehavior(state -> new UnregisteredTriggerTransitionBehavior<>(state.getState(), "InUnfamiliarState"));
 
         builder.configureState("InCall")

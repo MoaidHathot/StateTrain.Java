@@ -31,9 +31,13 @@ public interface IStateBuilder<TTrigger, TState> {
 
     IStateBuilder<TTrigger, TState> addBehaviorAsFirst(Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>> function);
 
+    IStateBuilder<TTrigger, TState> ignoreGlobalBehaviors();
+
     TState getState();
 
     String getName();
+
+    boolean getIgnoreGlobalBehaviors();
 
     StateMetadata getMetadata();
 

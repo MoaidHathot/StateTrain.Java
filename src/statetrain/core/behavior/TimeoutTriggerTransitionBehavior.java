@@ -16,6 +16,7 @@ import java.util.Optional;
 public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
     private final Duration timeout;
     private final TTrigger timeoutTrigger;
+    private final TState moveToState;
     private final ITaskScheduler timerScheduler;
 
     private TaskContext currentTimeoutContext;
@@ -23,9 +24,14 @@ public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBeha
     private final Object lock = new Object();
 
     public TimeoutTriggerTransitionBehavior(TState attachedState, Duration timeout, TTrigger timeoutTrigger, ITaskScheduler timerScheduler) {
+        this(attachedState, timeout, timeoutTrigger, null, timerScheduler);
+    }
+
+    public TimeoutTriggerTransitionBehavior(TState attachedState, Duration timeout, TTrigger timeoutTrigger, TState moveToState, ITaskScheduler timerScheduler) {
         super(attachedState);
         this.timeout = timeout;
         this.timeoutTrigger = timeoutTrigger;
+        this.moveToState = moveToState;
         this.timerScheduler = timerScheduler;
     }
 
@@ -69,6 +75,11 @@ public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBeha
     public TransitionResult<TState> triggerTransition(BehaviorTriggerTransitionArgs<TTrigger, TState> args) {
         synchronized (lock){
             cancelTimeout();
+
+            if(moveToState != null && timeoutTrigger == args.getTrigger()){
+                return TransitionResult.stateTransitionResult(moveToState);
+            }
+
             return TransitionResult.noActionResult();
         }
     }

@@ -17,6 +17,7 @@ public class NewStateStateBuilder<TTrigger, TState> implements IStateBuilder<TTr
     private StateMetadata metadata = new StateMetadata();
     private HashMap<TTrigger, TState> stateMap = new HashMap<>();
     private LinkedList<Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>>> behaviors = new LinkedList<>();
+    private boolean ignoreGlobalBehaviors;
 
     public NewStateStateBuilder(TState state){
         this(state, null);
@@ -94,6 +95,17 @@ public class NewStateStateBuilder<TTrigger, TState> implements IStateBuilder<TTr
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean getIgnoreGlobalBehaviors() {
+        return ignoreGlobalBehaviors;
+    }
+
+    @Override
+    public IStateBuilder<TTrigger, TState> ignoreGlobalBehaviors() {
+        ignoreGlobalBehaviors = true;
+        return this;
     }
 
     @Override

@@ -23,6 +23,7 @@ public class StateMachineBuilder<TTrigger, TState> {
     private List<IStateEventNotifier<TTrigger, TState>> stateEventNotifiers = new ArrayList<>();
 
     private Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>> defaultBehavior;
+    private List<Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>>> globalBehaviors = new ArrayList<>();
 
     public StateMachineBuilder(){
 
@@ -70,6 +71,7 @@ public class StateMachineBuilder<TTrigger, TState> {
         final var states = new HashMap<TState, State<TTrigger, TState>>();
 
         registerDefaultBehaviorToEmptyStates();
+        registerGlobalBehaviorsToStates();
 
         for(final var builder : stateBuilders){
             enforceRule(nameSet, states, builder.getState(), builder.getName(), uniqueStates, uniqueStateNames);
@@ -87,6 +89,11 @@ public class StateMachineBuilder<TTrigger, TState> {
 
     public StateMachineBuilder<TTrigger, TState> addNotifier(IStateEventNotifier<TTrigger, TState> notifier){
         stateEventNotifiers.add(notifier);
+        return this;
+    }
+
+    public StateMachineBuilder<TTrigger, TState> addGlobalBehavior(Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>> behavior){
+        this.globalBehaviors.add(behavior);
         return this;
     }
 
@@ -116,6 +123,14 @@ public class StateMachineBuilder<TTrigger, TState> {
                     throw new StateMachineBuilderException(StateMachineBuilderExceptionReason.StateWithoutBehaviors, String.format("State: '%s' does not have registered behaviors", builder.getState()));
                 }
 
+                builder.addBehavior(defaultBehavior);
+            }
+        }
+    }
+
+    private void registerGlobalBehaviorsToStates() throws StateMachineBuilderException {
+        for(final var builder : stateBuilders){
+            if(!builder.getIgnoreGlobalBehaviors()){
                 builder.addBehavior(defaultBehavior);
             }
         }
