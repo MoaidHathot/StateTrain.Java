@@ -2,6 +2,7 @@ package statetrain.core.event.args;
 
 import statetrain.core.State;
 import statetrain.core.StateMachineContext;
+import statetrain.core.TransitionArgs;
 import statetrain.core.behavior.IBehavior;
 
 public class StateTransitionedArgs<TTrigger, TState> {
@@ -10,13 +11,19 @@ public class StateTransitionedArgs<TTrigger, TState> {
     private final TTrigger trigger;
     private final IBehavior<TTrigger, TState> transitionCauser;
     private final StateMachineContext<TTrigger, TState> context;
+    private final TransitionArgs<TTrigger, TState> transitionArgs;
 
-    public StateTransitionedArgs(State<TTrigger, TState> oldState, State<TTrigger, TState> newState, StateMachineContext<TTrigger, TState> context, TTrigger trigger, IBehavior<TTrigger, TState> transitionCauser) {
+    public StateTransitionedArgs(State<TTrigger, TState> oldState, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> transitionArgs, StateMachineContext<TTrigger, TState> context, IBehavior<TTrigger, TState> transitionCauser) {
         this.oldState = oldState;
         this.newState = newState;
-        this.context = context;
         this.trigger = trigger;
         this.transitionCauser = transitionCauser;
+        this.context = context;
+        this.transitionArgs = transitionArgs;
+    }
+
+    public TransitionArgs<TTrigger, TState> getTransitionArgs() {
+        return transitionArgs;
     }
 
     public State<TTrigger, TState> getOldState() {
@@ -45,6 +52,7 @@ public class StateTransitionedArgs<TTrigger, TState> {
                 "oldState=" + oldState +
                 ", newState=" + newState +
                 ", trigger=" + trigger +
+                ", transitionArgs=" + transitionArgs +
                 ", transitionCauser=" + transitionCauser +
                 ", context=" + context +
                 '}';

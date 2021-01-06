@@ -99,7 +99,7 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
             }
 
             if(result.stopTransition()){
-                stateEventNotifier.onStoppedTransition(new StoppedTransitionArgs<>(context, result, transitionDueToBehavior, null != transitionToState));
+                stateEventNotifier.onStoppedTransition(new StoppedTransitionArgs<>(context, result, transitionDueToBehavior, null != transitionToState, args));
                 break;
             }
         }
@@ -124,7 +124,7 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
         }
 
         currentState = newState;
-        stateEventNotifier.onStateTransitioned(new StateTransitionedArgs<>(oldState, newState, context, trigger, transitionCauser));
+        stateEventNotifier.onStateTransitioned(new StateTransitionedArgs<>(oldState, newState, trigger, args, context, transitionCauser));
 
         for(final var behavior : newState.getBehaviors()){
             callBehaviorActivated(behavior, context, newState, trigger, args);
@@ -189,7 +189,7 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
     private void notifyError(Throwable error){
         if (null != stateEventNotifier) {
             final var context = new StateMachineContext<>(this);
-            stateEventNotifier.onException(new ExceptionArgs(currentState, error, context));
+            stateEventNotifier.onException(new ExceptionArgs<>(currentState, error, context));
             context.commit();
         }
     }
