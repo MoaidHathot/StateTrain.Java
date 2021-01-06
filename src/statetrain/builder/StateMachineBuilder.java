@@ -131,7 +131,10 @@ public class StateMachineBuilder<TTrigger, TState> {
     private void registerGlobalBehaviorsToStates() throws StateMachineBuilderException {
         for(final var builder : stateBuilders){
             if(!builder.getIgnoreGlobalBehaviors()){
-                builder.addBehavior(defaultBehavior);
+                for(final var behavior : globalBehaviors)
+                {
+                    builder.addBehavior(behavior);
+                }
             }
         }
     }
