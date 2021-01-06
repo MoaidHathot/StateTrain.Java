@@ -70,9 +70,9 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
         return triggerTransition(trigger, null);
     }
 
-    public synchronized State<TTrigger, TState> triggerTransition(TTrigger trigger, TransitionArgs args){
+    public synchronized State<TTrigger, TState> triggerTransition(TTrigger trigger, TransitionArgs<TTrigger, TState> args){
 
-        args = Optional.ofNullable(args).orElse(new TransitionArgs(new HashMap<>()));
+        args = Optional.ofNullable(args).orElse(new TransitionArgs<>(new HashMap<>()));
 
         final var context = new StateMachineContext<>(this);
         stateEventNotifier.onTriggerReceived(new TriggerReceivedArgs<>(trigger, currentState, args, context));
@@ -133,17 +133,17 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
 
     private void callBehaviorActivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
         runSafely(() ->  behavior.activated(new BehaviorActivatedArgs<>(trigger, args, newState, context)), this::notifyError);
-        stateEventNotifier.onActivatedBehavior(new ActivatedBehaviorArgs<>(behavior, context, newState, trigger));
+        stateEventNotifier.onActivatedBehavior(new ActivatedBehaviorArgs<>(behavior, context, newState, trigger, args));
     }
 
     private void callBehaviorActivating(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
         runSafely(() ->  behavior.activating(new BehaviorActivatingArgs<>(trigger, args, newState, context)), this::notifyError);
-        stateEventNotifier.onActivatingBehavior(new ActivatingBehaviorArgs<>(behavior, context, newState, trigger));
+        stateEventNotifier.onActivatingBehavior(new ActivatingBehaviorArgs<>(behavior, context, newState, trigger, args));
     }
 
     private void callBehaviorDeactivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> oldState, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
         runSafely(() ->  behavior.deactivated(new BehaviorDeactivatedArgs<>(trigger, args, oldState, newState, context)), this::notifyError);
-        stateEventNotifier.onDeactivatedBehavior(new DeactivatedBehaviorArgs<>(behavior, context, oldState, newState, trigger));
+        stateEventNotifier.onDeactivatedBehavior(new DeactivatedBehaviorArgs<>(behavior, context, oldState, newState, trigger, args));
     }
 
     private State<TTrigger, TState> selectStateToTransition(State<TTrigger, TState> currentState, TTrigger event, TState foundEventToTransition){

@@ -2,6 +2,7 @@ package statetrain.core.event.args;
 
 import statetrain.core.State;
 import statetrain.core.StateMachineContext;
+import statetrain.core.TransitionArgs;
 import statetrain.core.behavior.IBehavior;
 
 public class ActivatingBehaviorArgs<TTrigger, TState> {
@@ -9,12 +10,18 @@ public class ActivatingBehaviorArgs<TTrigger, TState> {
     private final State<TTrigger, TState> newState;
     private final TTrigger trigger;
     private final StateMachineContext<TTrigger, TState> context;
+    private final TransitionArgs<TTrigger, TState> transitionArgs;
 
-    public ActivatingBehaviorArgs(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger) {
+    public ActivatingBehaviorArgs(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> transitionArgs) {
         this.behavior = behavior;
         this.context = context;
         this.newState = newState;
         this.trigger = trigger;
+        this.transitionArgs = transitionArgs;
+    }
+
+    public TransitionArgs<TTrigger, TState> getTransitionArgs() {
+        return transitionArgs;
     }
 
     public IBehavior<TTrigger, TState> getBehavior() {
@@ -36,9 +43,10 @@ public class ActivatingBehaviorArgs<TTrigger, TState> {
     @Override
     public String toString() {
         return "ActivatingBehaviorArgs{" +
-                "behavior=" + behavior +
-                ", newState=" + newState +
+                "newState=" + newState +
                 ", trigger=" + trigger +
+                ", transitionArgs=" + trigger +
+                ", behavior=" + behavior +
                 ", context=" + context +
                 '}';
     }
