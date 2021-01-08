@@ -1,9 +1,11 @@
 package statetrain.builder;
 
+import statetrain.core.TransitionArgs;
 import statetrain.core.behavior.IBehavior;
 import statetrain.builder.exceptions.StateMachineBuilderException;
 import statetrain.core.State;
 import statetrain.core.StateMetadata;
+import statetrain.core.behavior.TriggerStateAttachmentBehavior;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -17,6 +19,7 @@ public class NewStateStateBuilder<TTrigger, TState> implements IStateBuilder<TTr
     private StateMetadata metadata = new StateMetadata();
     private HashMap<TTrigger, TState> stateMap = new HashMap<>();
     private LinkedList<Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>>> behaviors = new LinkedList<>();
+    private Map<TTrigger, List<Consumer<TransitionArgs<TTrigger, TState>>>> attachmentActions = new HashMap<>();
     private boolean ignoreGlobalBehaviors;
 
     public NewStateStateBuilder(TState state){
@@ -29,12 +32,33 @@ public class NewStateStateBuilder<TTrigger, TState> implements IStateBuilder<TTr
 
     @Override
     public State<TTrigger, TState> build() throws StateMachineBuilderException {
-        final var optimizedBehaviors = behaviors.stream().map(func -> func.apply(this)).collect(Collectors.toList());
+
+        if(!attachmentActions.isEmpty()){
+            final Function<IStateBuilder<TTrigger, TState>, IBehavior<TTrigger, TState>> attachmentBehavior = s -> new TriggerStateAttachmentBehavior<>(s.getState(), attachmentActions);
+            behaviors.addFirst(attachmentBehavior);
+        }
+
+        final var optimizedBehaviors = behaviors.stream().map(func -> func.apply(this)).collect(Collectors.toList());;
         return null == name ? new State<>(state, metadata, stateMap, optimizedBehaviors) : new State<>(state, name, metadata, stateMap, optimizedBehaviors);
     }
 
     @Override
     public IStateBuilder<TTrigger, TState> addTransition(TTrigger trigger, TState state){
+        stateMap.put(trigger, state);
+        return this;
+    }
+
+    @Override
+    public IStateBuilder<TTrigger, TState> addTransition(TTrigger trigger, TState state, TransitionTag... tags) {
+
+        for(final var tag : tags){
+            if(!attachmentActions.containsKey(trigger)){
+                attachmentActions.put(trigger, new ArrayList<>());
+            }
+
+            attachmentActions.get(trigger).add(a -> a.getProperties().put(tag.getKey(), tag.getValue()));
+        }
+
         stateMap.put(trigger, state);
         return this;
     }

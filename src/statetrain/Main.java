@@ -1,5 +1,6 @@
 package statetrain;
 
+import statetrain.builder.TransitionTag;
 import statetrain.core.State;
 import statetrain.core.TransitionArgs;
 import statetrain.core.event.IStateEventNotifier;
@@ -13,6 +14,7 @@ import statetrain.core.behavior.*;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Main {
 
@@ -38,7 +40,7 @@ public class Main {
         var builder = new StateMachineBuilder<String, String>("Idle", "InError");
 
         builder.configureState("Idle")
-                .addTransition("Call-incoming", "InAnswerDecision")
+                .addTransition("Call-incoming", "InAnswerDecision", new TransitionTag("TestTag1-1", "TestTagValue1-1"), new TransitionTag("TestTag1-2", UUID.randomUUID()))
                 .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
                 .addBehavior(state -> new UnregisteredTriggerTransitionBehavior<>(state.getState(), "InUnfamiliarState"));;
 
@@ -58,7 +60,7 @@ public class Main {
                 .addBehavior(state -> new UnregisteredTriggerTransitionBehavior<>(state.getState(), "InUnfamiliarState"));
 
         builder.configureState("InCallEnded")
-                .addTransition("Call-summary-ended", "Idle")
+                .addTransition("Call-summary-ended", "Idle", new TransitionTag("TestTag2-1", "TestTagValue2-1"))
                 .addBehavior(state -> new RegisteredTriggerTransitionBehavior<>(state.getState()))
                 .addBehavior(state -> new ImmediateTriggerTransitionStateBehavior<>(state.getState(), "Call-summary-ended"));
 
@@ -96,6 +98,10 @@ public class Main {
         @Override
         public void onStateTransitioned(StateTransitionedArgs<TTrigger, TState> args) {
             System.out.printf("Transitioned to '%s' from '%s' due to '%s' and '%s'\r\n", args.getNewState().getState(), Optional.ofNullable(args.getOldState()).map(State::getState).orElse(null), args.getTrigger(), args.getTransitionCauser().getName());
+            if(!args.getTransitionArgs().getProperties().isEmpty()){
+                System.out.println(args.getTransitionArgs().getProperties());
+            }
+
 //            System.out.println(args);
         }
 
@@ -107,6 +113,11 @@ public class Main {
         @Override
         public void onActivatedBehavior(ActivatedBehaviorArgs<TTrigger, TState> args) {
 //            System.out.println("\t\t\t" + args);
+        }
+
+        @Override
+        public void onDeactivatingBehavior(DeactivatingBehaviorArgs<TTrigger, TState> args) {
+
         }
 
         @Override

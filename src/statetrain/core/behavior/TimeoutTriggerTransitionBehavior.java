@@ -2,10 +2,7 @@ package statetrain.core.behavior;
 
 import statetrain.core.StateMachineContext;
 import statetrain.core.State;
-import statetrain.core.behavior.args.BehaviorActivatedArgs;
-import statetrain.core.behavior.args.BehaviorActivatingArgs;
-import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
-import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
+import statetrain.core.behavior.args.*;
 import statetrain.utils.timing.schedule.ITaskScheduler;
 import statetrain.utils.timing.schedule.TaskContext;
 import statetrain.utils.timing.schedule.TimerScheduler;
@@ -56,6 +53,11 @@ public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBeha
                 }
             }, timeout);
         }
+    }
+
+    @Override
+    public void deactivating(BehaviorDeactivatingArgs<TTrigger, TState> args) {
+
     }
 
     @Override

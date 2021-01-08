@@ -14,6 +14,7 @@ public interface IStateBuilder<TTrigger, TState> {
     State<TTrigger, TState> build() throws StateMachineBuilderException;
 
     IStateBuilder<TTrigger, TState> addTransition(TTrigger trigger, TState state);
+    IStateBuilder<TTrigger, TState> addTransition(TTrigger trigger, TState state, TransitionTag ... tags);
 
     IStateBuilder<TTrigger, TState> setName(String name) throws StateMachineBuilderException;
 

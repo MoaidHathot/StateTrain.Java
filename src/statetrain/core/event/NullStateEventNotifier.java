@@ -28,6 +28,11 @@ public class NullStateEventNotifier<TTrigger, TState> implements IStateEventNoti
     }
 
     @Override
+    public void onDeactivatingBehavior(DeactivatingBehaviorArgs<TTrigger, TState> args) {
+
+    }
+
+    @Override
     public void onDeactivatedBehavior(DeactivatedBehaviorArgs<TTrigger, TState> args) {
     }
 

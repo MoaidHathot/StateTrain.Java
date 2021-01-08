@@ -1,10 +1,7 @@
 package statetrain.core;
 
 import statetrain.core.behavior.IBehavior;
-import statetrain.core.behavior.args.BehaviorActivatedArgs;
-import statetrain.core.behavior.args.BehaviorActivatingArgs;
-import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
-import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
+import statetrain.core.behavior.args.*;
 import statetrain.core.event.IStateEventNotifier;
 import statetrain.core.event.NullStateEventNotifier;
 import statetrain.core.event.SafeStateEventNotifier;
@@ -115,7 +112,7 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
 
         if(null != oldState){
             for(final var behavior : oldState.getBehaviors()){
-                callBehaviorDeactivated(behavior, context, oldState, newState, trigger, args);
+                callBehaviorDeactivating(behavior, context, oldState, newState, trigger, args);
             }
         }
 
@@ -125,6 +122,12 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
 
         currentState = newState;
         stateEventNotifier.onStateTransitioned(new StateTransitionedArgs<>(oldState, newState, trigger, args, context, transitionCauser));
+
+        if(null != oldState){
+            for(final var behavior : oldState.getBehaviors()){
+                callBehaviorDeactivated(behavior, context, oldState, newState, trigger, args);
+            }
+        }
 
         for(final var behavior : newState.getBehaviors()){
             callBehaviorActivated(behavior, context, newState, trigger, args);
@@ -144,6 +147,11 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
     private void callBehaviorDeactivated(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> oldState, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
         runSafely(() ->  behavior.deactivated(new BehaviorDeactivatedArgs<>(trigger, args, oldState, newState, context)), this::notifyError);
         stateEventNotifier.onDeactivatedBehavior(new DeactivatedBehaviorArgs<>(behavior, context, oldState, newState, trigger, args));
+    }
+
+    private void callBehaviorDeactivating(IBehavior<TTrigger, TState> behavior, StateMachineContext<TTrigger, TState> context, State<TTrigger, TState> oldState, State<TTrigger, TState> newState, TTrigger trigger, TransitionArgs<TTrigger, TState> args){
+        runSafely(() ->  behavior.deactivating(new BehaviorDeactivatingArgs<>(trigger, args, oldState, newState, context)), this::notifyError);
+        stateEventNotifier.onDeactivatingBehavior(new DeactivatingBehaviorArgs<>(behavior, context, oldState, newState, trigger, args));
     }
 
     private State<TTrigger, TState> selectStateToTransition(State<TTrigger, TState> currentState, TTrigger event, TState foundEventToTransition){

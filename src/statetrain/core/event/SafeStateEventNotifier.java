@@ -51,6 +51,11 @@ public class SafeStateEventNotifier<TTrigger, TState> implements IStateEventNoti
     }
 
     @Override
+    public void onDeactivatingBehavior(DeactivatingBehaviorArgs<TTrigger, TState> args) {
+        callSafely(() -> innerNotifier.onDeactivatingBehavior(args));
+    }
+
+    @Override
     public void onDeactivatedBehavior(DeactivatedBehaviorArgs<TTrigger, TState> args) {
         callSafely(() -> innerNotifier.onDeactivatedBehavior(args));
     }

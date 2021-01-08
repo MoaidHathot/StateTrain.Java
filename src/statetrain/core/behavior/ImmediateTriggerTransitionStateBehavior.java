@@ -2,10 +2,7 @@ package statetrain.core.behavior;
 
 import statetrain.core.State;
 import statetrain.core.StateMachineContext;
-import statetrain.core.behavior.args.BehaviorActivatedArgs;
-import statetrain.core.behavior.args.BehaviorActivatingArgs;
-import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
-import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
+import statetrain.core.behavior.args.*;
 
 public class ImmediateTriggerTransitionStateBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
     private final TTrigger immediateTrigger;
@@ -27,6 +24,11 @@ public class ImmediateTriggerTransitionStateBehavior<TTrigger, TState> extends B
     @Override
     public void activated(BehaviorActivatedArgs<TTrigger, TState> args) {
         args.getContext().registerResolveAction(c -> c.triggerTransition(immediateTrigger));
+    }
+
+    @Override
+    public void deactivating(BehaviorDeactivatingArgs<TTrigger, TState> args) {
+
     }
 
     @Override

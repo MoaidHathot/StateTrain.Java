@@ -2,10 +2,7 @@ package statetrain.core.behavior;
 
 import statetrain.core.StateMachineContext;
 import statetrain.core.State;
-import statetrain.core.behavior.args.BehaviorActivatedArgs;
-import statetrain.core.behavior.args.BehaviorActivatingArgs;
-import statetrain.core.behavior.args.BehaviorDeactivatedArgs;
-import statetrain.core.behavior.args.BehaviorTriggerTransitionArgs;
+import statetrain.core.behavior.args.*;
 
 public class UnregisteredTriggerTransitionBehavior<TTrigger, TState> extends BaseBehavior<TTrigger, TState> {
 
@@ -26,6 +23,11 @@ public class UnregisteredTriggerTransitionBehavior<TTrigger, TState> extends Bas
 
     @Override
     public void activated(BehaviorActivatedArgs<TTrigger, TState> args) {
+    }
+
+    @Override
+    public void deactivating(BehaviorDeactivatingArgs<TTrigger, TState> args) {
+
     }
 
     @Override
