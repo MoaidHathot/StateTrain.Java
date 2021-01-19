@@ -57,11 +57,14 @@ public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBeha
 
     @Override
     public void deactivating(BehaviorDeactivatingArgs<TTrigger, TState> args) {
-
+        synchronized (lock){
+            cancelTimeout();
+        }
     }
 
     @Override
     public void deactivated(BehaviorDeactivatedArgs<TTrigger, TState> args) {
+        //todo - probably should be removed
         synchronized (lock){
             cancelTimeout();
         }
@@ -76,9 +79,9 @@ public class TimeoutTriggerTransitionBehavior<TTrigger, TState> extends BaseBeha
     @Override
     public TransitionResult<TState> triggerTransition(BehaviorTriggerTransitionArgs<TTrigger, TState> args) {
         synchronized (lock){
-            cancelTimeout();
 
             if(moveToState != null && timeoutTrigger == args.getTrigger()){
+                cancelTimeout();
                 return TransitionResult.stateTransitionResult(moveToState);
             }
 
