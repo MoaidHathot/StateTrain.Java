@@ -63,6 +63,10 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
         context.commit();
     }
 
+    public TState getInitialState() {
+        return initialState.getState();
+    }
+
     public State<TTrigger, TState> triggerTransition(TTrigger trigger){
         return triggerTransition(trigger, null);
     }
@@ -165,6 +169,8 @@ public class StateMachine<TTrigger, TState> implements AutoCloseable {
     public Map<TState, State<TTrigger, TState>> getStates() {
         return states;
     }
+
+
 
     private boolean runSafely(Runnable runnable, Consumer<Exception> onError){
         try{

@@ -8,6 +8,7 @@ import statetrain.core.event.args.*;
 import statetrain.exceptions.StateMachineException;
 import statetrain.builder.StateMachineBuilder;
 import statetrain.core.StateMachine;
+import statetrain.transform.dot.StateMachineDotTransformer;
 import statetrain.utils.timing.schedule.TimerScheduler;
 import statetrain.core.behavior.*;
 
@@ -30,6 +31,9 @@ public class Main {
 //        machine.triggerTransition("Call-ended");
 
         System.in.read();
+
+        var dot = new StateMachineDotTransformer<String, String>(machine);
+        dot.transform();
 
         System.out.println("Finished with: " + machine.getCurrentState());
     }
